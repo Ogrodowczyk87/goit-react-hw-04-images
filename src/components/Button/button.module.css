@@ -1,0 +1,23 @@
+.load_btn {
+    border-radius: 25px;
+    background-color: rgb(108, 109, 113);
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    color: #fff;
+    border: solid black 2px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 25px;    
+    font-style: normal;    
+    min-width: 150px;
+
+}
+
+.load_btn:hover {
+    background-color: #424346;
+}
