@@ -38,15 +38,14 @@ class App extends Component {
       images: [],
       currentPage: 1
     });
-    this.fetchImages(query, 1);
   }
 
-  //uploading more pages
+ 
+//uploading more pages
   onPageUpload = () => {
     this.setState((prev) => ({
       currentPage: prev.currentPage + 1,
     }));
-    this.fetchImages(this.state.searchQuery, this.state.currentPage + 1);
   }
 
 
