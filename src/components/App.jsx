@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useState, useEffect } from 'react';
 import Notiflix from 'notiflix';
 import fetchPixabay from "services/PixabayService";
 
@@ -10,112 +10,130 @@ import ErrorMessage from "./ErrorMessage/Error";
 import Modal from "./Modal/Modal";
 
 
-class App extends Component {
+const App = () => {
 
-  state = {
-    modal: { isOpen: false, largeImageURL: '' },
-    images: [],
-    totalImages: 0,
-    searchQuery: '',
-    currentPage: 1,
-    loading: false,
-    error: false
+  const [modal, setModal] = useState({ isOpen: false, largeImageURL: '' });
+  const [images, setImages] = useState([]);
+  const [totalImages, setTotalImages] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState();
+
+
+  // componentDidUpdate = async (_, prevState) => {
+  //   const { searchQuery, currentPage } = this.state;
+  //   if (searchQuery !== prevState.searchQuery || currentPage !== prevState.currentPage) {
+  //     this.fetchImages(searchQuery, currentPage);
+  //   }
+  // }
+  useEffect(() => {
+    if (!searchQuery) {
+      return;
+    }
+    fetchImages(searchQuery, currentPage);
+  }, [searchQuery, currentPage]);
+
+  const onSubmitSearch = query => {
+    setSearchQuery(query);
+    setImages([]);
+    setCurrentPage(1);
+    setTotalImages(0);
   };
 
-  componentDidUpdate = async (_, prevState) => {
-    const { searchQuery, currentPage } = this.state;
-    if (searchQuery !== prevState.searchQuery || currentPage !== prevState.currentPage) {
-      this.fetchImages(searchQuery, currentPage);
-    }
-  }
-
-
-
   // first search
-  onSubmitSearch = (query) => {
-    this.setState({
-      searchQuery: query,
-      images: [],
-      currentPage: 1
-    });
-  }
-
- 
-//uploading more pages
-  onPageUpload = () => {
-    this.setState((prev) => ({
-      currentPage: prev.currentPage + 1,
-    }));
-  }
+  // onSubmitSearch = (query) => {
+  //   this.setState({
+  //     searchQuery: query,
+  //     images: [],
+  //     currentPage: 1
+  //   });
+  // }
 
 
-  fetchImages = async (query, page) => {
+  //uploading more pages
+  // onPageUpload = () => {
+  //   this.setState((prev) => ({
+  //     currentPage: prev.currentPage + 1,
+  //   }));
+  // }
+
+  const onPageUpload = () => {
+    setCurrentPage(prevPage => prevPage + 1);
+  };
+
+  const fetchImages = async (query, page) => {
     try {
-      this.setState({ loading: true });
+      setLoading(true);
 
       const data = await fetchPixabay(query, page);
 
       if (data.totalHits === 0) {
-        Notiflix.Notify.warning(`There is no results upon your ${query}, please try again...`);
+        Notiflix.Notify.warning(
+          `There is no results upon your ${query}, please try again...`
+        );
         return;
       }
 
-      this.setState((prevState) => {
-        return {
-          images: [...prevState.images, ...data.hits],
-          totalImages: data.totalHits,
-        };
+
+      setImages(prevState => {
+        return [...prevState, ...data.hits];
       });
 
+      setTotalImages(data.totalHits);
     } catch (error) {
-      this.setState({ error: true });
+      setError(true);
     } finally {
-      this.setState({ loading: false })
+      setLoading(false);
     }
-  }
+  };
+
+
 
   //set up modal
-  onModalOpen = (data) => {
-    this.setState({
-      modal: {
-        isOpen: true,
-        largeImageURL: data
-      },
+  // onModalOpen = (data) => {
+  //   this.setState({
+  //     modal: {
+  //       isOpen: true,
+  //       largeImageURL: data
+  //     },
+  //   });
+  // };
+  const onModalOpen = data => {
+    setModal({
+      isOpen: true,
+      largeImageURL: data,
     });
   };
 
-  onModalClose = () => {
-    this.setState({
-      modal: {
-        isOpen: false,
-        largeImageURL: ''
-      },
+  const onModalClose = () => {
+    setModal({
+      isOpen: false,
+      largeImageURL: '',
     });
-  }
+  };
 
-  render() {
-    const { images, loading, error, totalImages, modal } = this.state;
-    const showBtn = !loading && images.length !== totalImages;
+  const showBtn = !loading && images.length !== totalImages;
 
-    return (
-      <div>
+  return (
+    <div>
+      <SearchBar onSubmit={onSubmitSearch} />
+      {loading && <Loader />}
+      {images.length > 0 && (
+        <ImageGallery images={images} onModalOpen={onModalOpen} />
+      )}
+      {error && <ErrorMessage />}
 
-        <SearchBar onSubmit={this.onSubmitSearch} />
-        {loading && <Loader />}
-        {images.length > 0 && <ImageGallery images={images} onModalOpen={this.onModalOpen} />}
-        {error && <ErrorMessage />}
+      {showBtn && <Button onPageUpload={onPageUpload} />}
 
-        {showBtn && <Button onPageUpload={this.onPageUpload} />}
-
-        {modal.isOpen &&
-          <Modal
-            largeImageURL={this.state.modal.largeImageURL}
-            onModalClose={this.onModalClose}
-          />}
-
-      </div>
-    );
-  }
+      {modal.isOpen && (
+        <Modal
+          largeImageURL={modal.largeImageURL}
+          onModalClose={onModalClose}
+        />
+      )}
+    </div>
+  );
 };
 
 export default App;
