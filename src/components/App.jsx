@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Notiflix from 'notiflix';
-import fetchPixabay from "services/PixabayService";
+import fetchPixabay from "services/pixabayService";
 
 import ImageGallery from "./ImageGallery/ImageGallery";
 import SearchBar from "./SearchBar/SearchBar";
